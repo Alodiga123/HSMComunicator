@@ -1,5 +1,6 @@
 /*     */ package com.alodiga.hsm;
 /*     */ import java.io.BufferedInputStream;
+		   import java.util.logging.*;
 /*     */ import java.io.BufferedOutputStream;
 /*     */ import java.io.DataInputStream;
 /*     */ import java.io.DataOutputStream;
@@ -77,11 +78,16 @@ import com.alodiga.hsm.util.ConstantResponse;
 /*     */   {
 /*     */     try
 /*     */     {
+				Logger.getLogger (CryptoConnection.class.getName()).log(Level.INFO, "entro");
+	
 /*  78 */       UseParameters.getHSMConfig();
+				Logger.getLogger (CryptoConnection.class.getName()).log(Level.INFO, "obtiene configuracion");
 /*  79 */       requestData = message;
 /*  80 */       System.out.println("TEST MESSAGE :" + message);
 /*  81 */       System.out.println(UseParameters.HsmConfig.iphsmCon());
 /*  82 */       System.out.println(UseParameters.HsmConfig.porthsmCon());
+				Logger.getLogger (CryptoConnection.class.getName()).log(Level.INFO, "ip:"+UseParameters.HsmConfig.iphsmCon()+"port:"+UseParameters.HsmConfig.porthsmCon());
+
 /*  83 */       hsm_socket = new Socket(UseParameters.HsmConfig.iphsmCon(), UseParameters.HsmConfig.porthsmCon());
 /*  78 */       UseParameters.getHSMConfig();
 /*  79 */       requestData = message;

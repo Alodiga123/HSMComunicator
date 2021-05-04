@@ -16,7 +16,7 @@ import com.alodiga.hsm.util.ConstantResponse;
 	/*     */ private static final String Separator = "#";
 	/*     */
 	/* 14 */ static {
-		Commands[0] = "B2";
+				 Commands[0] = "B2";
 		/* 15 */ Commands[1] = "CC";
 		/* 16 */ Commands[2] = "JE";
 		/* 17 */ Commands[3] = "CY";
@@ -32,6 +32,7 @@ import com.alodiga.hsm.util.ConstantResponse;
 		/* 27 */ Commands[13] = "BU";
 		/* 28 */ Commands[14] = "GC";
 		/* 29 */ Commands[15] = "NO";
+				 Commands[16] = "A0";
 		/*     */
 		/*     */
 		/* 32 */ ErrorCodes = new String[50];
@@ -358,6 +359,31 @@ import com.alodiga.hsm.util.ConstantResponse;
 		}
 		return commandResult;
 	}
+	
+	public static String unpackGenerateAKeyCheckValue (String responseCommand) throws NotConnectionHSMException {
+		String MsgHeader = null;
+		String responsecode = null;
+		String respcommand = null;
+		String commandResult = null;
+		String keyencryptedKEKResult = null;
+		try {
+			String restofMsg = unpackMsgHeader(responseCommand);
+			respcommand = restofMsg.substring(0, 2);
+			responsecode = restofMsg.substring(2, 4);
+			if (responsecode.equals("00")) {
+				commandResult = restofMsg;
+				System.out.println("unpackResultKey : " + commandResult);
+			} else {
+				commandResult = unpackErrorResponse(responseCommand);
+			}
+		} catch (NotConnectionHSMException e) {
+			e.printStackTrace();
+			throw new NotConnectionHSMException(ConstantResponse.NOT_RESPONSE_HSM);
+
+		}
+		return commandResult;
+	}
+
 
 	private static final String[] ErrorCodes;
 

@@ -1471,29 +1471,29 @@ import com.alodiga.hsm.operations.UseParameters.TypeHSM;
 /*      */   
 /*      */   private void callactionPerformedEcho(ActionEvent e)
 /*      */   {
-/* 1635 */     String testConnection = null;
-/*      */     try {
-/* 1637 */       testConnection = CryptoConnection.sendAndReceiveToHSM(ThalesCryptoCommand.echoTestMessage());
-/*      */     }
-/*      */     catch (Exception e1) {
-/* 1640 */       e1.printStackTrace();
-/*      */     }
-/* 1642 */     JOptionPane.showMessageDialog(this, "Echo Test Result: " + UnpackThalesCryptoCommand.unpackechoTestMessage(testConnection), 
-/* 1643 */       "", 1);
+///* 1635 */     String testConnection = null;
+///*      */     try {
+///* 1637 */       testConnection = CryptoConnection.sendAndReceiveToHSM(ThalesCryptoCommand.echoTestMessage());
+///*      */     }
+///*      */     catch (Exception e1) {
+///* 1640 */       e1.printStackTrace();
+///*      */     }
+/////* 1642 */     JOptionPane.showMessageDialog(this, "Echo Test Result: " + UnpackThalesCryptoCommand.unpackechoTestMessage(testConnection), 
+///* 1643 */       "", 1);
 /*      */   }
 /*      */   
-/*      */   private void callactionPerformedFirmware(ActionEvent e)
-/*      */   {
-/* 1648 */     String obtainHSMStatus = null;
-/*      */     try {
-/* 1650 */       obtainHSMStatus = CryptoConnection.sendAndReceiveToHSM(ThalesCryptoCommand.firmwareCommand());
-/*      */     }
-/*      */     catch (Exception e1) {
-/* 1653 */       e1.printStackTrace();
-/*      */     }
-/*      */     
-/* 1656 */     JOptionPane.showMessageDialog(this, "Firmware Version: " + UnpackThalesCryptoCommand.unpackfirmwareCommand(obtainHSMStatus), 
-/* 1657 */       "", 1);
+/*      */   private void callactionPerformedFirmware(ActionEvent e) {
+///*      */   {
+///* 1648 */     String obtainHSMStatus = null;
+///*      */     try {
+///* 1650 */       obtainHSMStatus = CryptoConnection.sendAndReceiveToHSM(ThalesCryptoCommand.firmwareCommand());
+///*      */     }
+///*      */     catch (Exception e1) {
+///* 1653 */       e1.printStackTrace();
+///*      */     }
+///*      */     
+///* 1656 */     JOptionPane.showMessageDialog(this, "Firmware Version: " + UnpackThalesCryptoCommand.unpackfirmwareCommand(obtainHSMStatus), 
+///* 1657 */       "", 1);
 /*      */   }
 /*      */   
 /*      */   public static String obtainPinBlockFormat(String sourceData) {

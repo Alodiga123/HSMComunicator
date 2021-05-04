@@ -1,5 +1,6 @@
 /*     */ package com.alodiga.hsm;
 /*     */ import java.io.PrintStream;
+
 import java.net.Socket;
 /*     */ import java.sql.Connection;
 /*     */ import java.sql.SQLException;
@@ -8,7 +9,10 @@ import com.alodiga.hsm.data.ConnectDB;
 import com.alodiga.hsm.data.ExecuteSP;
 import com.alodiga.hsm.exception.NotConnectionHSMException;
 import com.alodiga.hsm.operations.UseParameters;
+import java.util.logging.*;
 import com.alodiga.hsm.operations.UseParameters.ParametersConfig;
+import com.alodiga.hsm.response.GenerateKeyResponse;
+import com.alodiga.hsm.util.Constant;
 import com.alodiga.hsm.util.ConstantResponse;
 
 /*     */ 
@@ -45,23 +49,14 @@ import com.alodiga.hsm.util.ConstantResponse;
 /*     */     {
 /*     */     case 0: 
 /*  60 */       ConnectServer();
-/*  62 */       String[] reqTransMFKSplit = requestmsg.split(",");
-/*  63 */       String reqTransMFKTerminalID = "KWP_" + reqTransMFKSplit[1];
-/*  64 */       String reqTransMFKPinBlock = reqTransMFKSplit[2];
-/*  65 */       String reqTransMFKPan = reqTransMFKSplit[3];
-/*     */       
-/*  67 */       String[] dbInfoCryptoTransMfk = ExecuteSP.execGetCryptoForTranslatetoMFK(reqTransMFKTerminalID, conn).split(",");
-/*  68 */       String dbcryptoTransMfk = dbInfoCryptoTransMfk[0];
-/*  69 */       String dbcryptoLenghtTransMfk = dbInfoCryptoTransMfk[1];
-/*  70 */       String dbpinBlockFormatTransMfk = dbInfoCryptoTransMfk[2];
-/*  71 */       int dbAccntOffsetTransMfk = Integer.parseInt(dbInfoCryptoTransMfk[3]);
-/*     */       
-/*  73 */       String tAccountNumberTransMfk = reqTransMFKPan.substring(dbAccntOffsetTransMfk, dbAccntOffsetTransMfk + 12);
-/*     */       
-/*  75 */       requestMessage = CryptoConnection.sendAndReceiveToHSM(ThalesCryptoCommand.transletePintoMFK(dbcryptoLenghtTransMfk, dbcryptoTransMfk, dbpinBlockFormatTransMfk, reqTransMFKPinBlock, tAccountNumberTransMfk));
+/*  62 */       String[] request = requestmsg.split(",");
+
+/*  73 */  
+/*     */  
+/*  75 */       requestMessage = CryptoConnection.sendAndReceiveToHSM(ThalesCryptoCommand.transletePintoMFKZPKtoLMK(request[3],request[2],request[0], "01",request[1]));
 /*  76 */       responseMessage = UnpackThalesCryptoCommand.unpacktransletePintoMFK(requestMessage);
 /*     */       
-/*  78 */       System.out.println("Mensaje de Respuesta: " + responseMessage);
+/*  78 */       System.out.println("trg de Respuesta: " + responseMessage);
 /*     */       
 /*  80 */       CloseConnection();
 /*     */       
@@ -139,24 +134,45 @@ import com.alodiga.hsm.util.ConstantResponse;
 /* 153 */       break;
 /*     */     
 /*     */ 
-/*     */     case 3: 
-/* 157 */       String[] reqGkeySplit = requestmsg.split(",");
-/* 158 */       String reqGkeyLenght = reqGkeySplit[1];
-/* 159 */       String reqGkeyKeytype = reqGkeySplit[2];
-/*     */       
-/* 161 */       if ((reqGkeyKeytype.equals("KEK")) || (reqGkeyKeytype.equals("TPK")) || (reqGkeyKeytype.equals("KWP")) || (reqGkeyKeytype.equals("PVK")) || 
-/* 162 */         (reqGkeyKeytype.equals("CAK")) || (reqGkeyKeytype.equals("CVK")))
-/*     */       {
+
+////////////////////////////////////////GenerateKey//////////////////////////////////////////////////
+case 3:
+	String[] reqGkeySplit = requestmsg.split(",");
+	String reqGkeyLenght = reqGkeySplit[1];
+	String reqGkeyKeytype = reqGkeySplit[2];
+
+	if ((reqGkeyKeytype.equals("KEK")) || (reqGkeyKeytype.equals("TPK")) || (reqGkeyKeytype.equals("KWP"))
+			|| (reqGkeyKeytype.equals("PVK")) || (reqGkeyKeytype.equals("CAK")) || (reqGkeyKeytype.equals("CVK"))) {
+		requestMessage = CryptoConnection
+				.sendAndReceiveToHSM(ThalesCryptoCommand.generateKey(reqGkeyLenght, reqGkeyKeytype));
+		responseMessage = UnpackThalesCryptoCommand.unpackGenerateKey(requestMessage);
+	} else {
+		responseMessage = "Key Type Not Supported";
+	}
+	break;
+
+////////////////////////////////////////ExportKey//////////////////////////////////////////////////
+/*     */     case 4: 
+	
+/* 157 */       String[] split = requestmsg.split(",");
+/* 158 */       String kek = split[0];
+/* 159 */       String kwp = split[1];
+/* 165 */       requestMessage = CryptoConnection.sendAndReceiveToHSM(ThalesCryptoCommand.exportKey(kek, kwp));
+/* 166 */       responseMessage = UnpackThalesCryptoCommand.unpackGenerateKey(requestMessage);
 /*     */ 
-/* 165 */         requestMessage = CryptoConnection.sendAndReceiveToHSM(ThalesCryptoCommand.generateKey(reqGkeyLenght, reqGkeyKeytype));
-/* 166 */         responseMessage = UnpackThalesCryptoCommand.unpackGenerateKey(requestMessage);
-/* 167 */         System.out.println("Mensaje de Respuesta: " + responseMessage);
-/*     */       }
-/*     */       else
-/*     */       {
-/* 171 */         responseMessage = "Key Type Not Supported";
-/* 172 */         System.out.println("Mensaje de Respuesta: " + responseMessage); }
+
 /* 173 */       break;
+
+////////////////////////////////////////GenerateKey//////////////////////////////////////////////////
+/*     */     case 5: 
+
+/*     */         String[] requestValue = requestmsg.split(",");
+/* 165 */         requestMessage = CryptoConnection.sendAndReceiveToHSM(ThalesCryptoCommand.generateaKeyCheckValue(requestValue[0]));
+/* 166 */         responseMessage = UnpackThalesCryptoCommand.unpackGenerateAKeyCheckValue(requestMessage);
+/*     *
+/* 173 */       break;
+
+
 
 /*     */     case 6: 
 /* 196 */       ConnectServer();
@@ -228,16 +244,30 @@ import com.alodiga.hsm.util.ConstantResponse;
 /*     */     case 9: 
 /* 271 */       ConnectServer();       
 /* 273 */       String[] reqOffIBMSplit = requestmsg.split(",");
-/* 274 */       String pinIbmUnderLMK = reqOffIBMSplit[1];
-/* 275 */       String panIbmNumb = reqOffIBMSplit[2];
+/* 274 */       String pinIbmUnderLMK = reqOffIBMSplit[0];
+/* 275 */       String panIbmNumb = reqOffIBMSplit[1];
 /*     */       
-/* 277 */       String[] dbInfoIbmPvkCrypto = ExecuteSP.execGetCryptoPvkIBM(conn).split(",");
-/* 278 */       String cryptoIbmPVK = dbInfoIbmPvkCrypto[0];
-/* 279 */       String cryptoIbmPvkLenght = dbInfoIbmPvkCrypto[1];
-/* 280 */       String cryptoIbmminPinLenght = dbInfoIbmPvkCrypto[2];
-/* 281 */       int acctIbmoffset = Integer.parseInt(dbInfoIbmPvkCrypto[3]);
+
+				//Va a base de datos
+///* 277 */       String[] dbInfoIbmPvkCrypto = ExecuteSP.execGetCryptoPvkIBM(conn).split(",");
+///* 278 */       String cryptoIbmPVK = dbInfoIbmPvkCrypto[0];
+///* 279 */       String cryptoIbmPvkLenght = dbInfoIbmPvkCrypto[1];
+///* 280 */       String cryptoIbmminPinLenght = dbInfoIbmPvkCrypto[2];
+///* 281 */       int acctIbmoffset = Integer.parseInt(dbInfoIbmPvkCrypto[3]);
+
+
+					String cryptoIbmPVK = "8B46B41D417C2D4D";
+					String cryptoIbmPvkLenght = "Single";
+					String cryptoIbmminPinLenght = "04";
+				//	int acctIbmoffset = Integer.parseInt(dbInfoIbmPvkCrypto[3]);
+
+
+
+
+
+				//
 /*     */       
-/* 283 */       String accountIbmNumber = panIbmNumb.substring(acctIbmoffset, acctIbmoffset + 12);
+/* 283 */       String accountIbmNumber = "441161254842";
 /*     */       
 /* 285 */       String pinValidationDataIbmpart1 = panIbmNumb.substring(0, 10);
 /* 286 */       String pinValidationDataIbmpart2 = panIbmNumb.substring(panIbmNumb.length() - 1);
@@ -339,7 +369,10 @@ import com.alodiga.hsm.util.ConstantResponse;
 /*     */     case 15: 
 
 	try {
+		System.out.println("entro 33" + responseMessage);
+		Logger.getLogger (OmniCryptoCommand.class.getName()).log(Level.INFO, "entro en el 15");
 		requestMessage = CryptoConnection.sendAndReceiveToHSM(ThalesCryptoCommand.statusCommand());
+		System.out.println("respuesta" + "requestMessage");
 	} catch (Exception e) {
 		 throw new NotConnectionHSMException(ConstantResponse.NOT_RESPONSE_HSM);
 	}
@@ -352,6 +385,7 @@ import com.alodiga.hsm.util.ConstantResponse;
 /*     */ 
 			/*     */ case 16:
 				/* 395 */ try {
+					Logger.getLogger (OmniCryptoCommand.class.getName()).log(Level.INFO, "entro en el 16");
 					 requestMessage = CryptoConnection.sendAndReceiveToHSM(ThalesCryptoCommand.firmwareCommand());
 				} catch (Exception e) {
 					throw new NotConnectionHSMException(ConstantResponse.NOT_RESPONSE_HSM);
@@ -379,6 +413,8 @@ import com.alodiga.hsm.util.ConstantResponse;
 /*     */   {
 /*     */     try
 /*     */     {
+	
+	            System.out.println("connectDatabase");
 /* 418 */       UseParameters.getParametersConfig();
 /* 419 */       String ipsrv = UseParameters.ParametersConfig.ipsrv();
 /* 420 */       String portsrv = UseParameters.ParametersConfig.portsrv();
@@ -437,20 +473,53 @@ import com.alodiga.hsm.util.ConstantResponse;
 /*     */   }
 /*     */   
 /*     */ 
-/*     */   public static boolean CloseConnection()
-/*     */     throws Exception
-/*     */   {
-/* 479 */     ConnectDB.cerrar(conn);
-/* 480 */     if (conn.isClosed()) {
-/* 481 */       System.out.println("Connection closed.");
-/* 482 */       return false;
-/*     */     }
-/* 484 */     return true;
-/*     */   }
-/*     */ }
+public static boolean CloseConnection() throws Exception {
+	ConnectDB.cerrar(conn);
+	if (conn.isClosed()) {
+		System.out.println("Connection closed.");
+		return false;
+	}
+	return true;
+}
+///////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////GenerateKey//////////////////////////////////////////////////////
+public static GenerateKeyResponse generateKey(String keyType, String lenght) throws Exception {
+	if ((keyType.equals("KEK")) || (keyType.equals("TPK")) || (keyType.equals("KWP"))|| (keyType.equals("PVK")) || (keyType.equals("CAK")) || (keyType.equals("CVK"))) {
+		String requestMessage = "";
+		String responseMessage = "";
+		 requestMessage = CryptoConnection
+				.sendAndReceiveToHSM(ThalesCryptoCommand.generateKey(lenght, keyType));
+		  responseMessage = UnpackThalesCryptoCommand.unpackGenerateKey(requestMessage);
+		  return new GenerateKeyResponse(Constant.SUCCESS, Constant.SUCCESS, responseMessage, lenght);		  
+	} else {
+		return new GenerateKeyResponse(Constant.KEY_NOT_SUPPORT, Constant.KEY_NOT_SUPPORT_MESSAGE);
+	} 
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+public static void  exportKey( String kek, String kwp) throws Exception {
+	String requestMessage = "";
+	String responseMessage = "";
+    requestMessage = CryptoConnection.sendAndReceiveToHSM(ThalesCryptoCommand.exportKey(kwp,kek));
+    responseMessage = UnpackThalesCryptoCommand.unpackGenerateKey(requestMessage);
+    System.out.println("response Message");
+
+}
 
 
-/* Location:              /home/usuario/Escritorio/OmniSocket.jar!/HSM/OmniCryptoCommand.class
- * Java compiler version: 7 (51.0)
- * JD-Core Version:       0.7.1
- */
+	
+
+
+
+
+
+
+
+}
+
+
+
+
+
+

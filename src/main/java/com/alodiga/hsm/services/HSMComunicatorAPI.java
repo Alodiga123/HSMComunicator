@@ -158,7 +158,6 @@ public class HSMComunicatorAPI {
 		StringBuilder requestHSM = new StringBuilder();
 		String offSetResponse;
 		try {
-			
 			requestHSM.append(pinELMK);
 			requestHSM.append(",");
 			requestHSM.append(pan);
@@ -166,10 +165,8 @@ public class HSMComunicatorAPI {
 			requestHSM.append(institutionId);
 			requestHSM.append(",");
 			requestHSM.append(typeOffProduct);
-
 			//TODO:Comentar a Alvaro que falta una base de datos
-			// offSetResponse  = OmniCryptoCommand.ProcessRequest(Integer.parseInt(Constant.GENERATE_IBM_PIN_OFF_SET), requestHSM.toString()); 			
-
+			 offSetResponse  = OmniCryptoCommand.ProcessRequest(Integer.parseInt(Constant.GENERATE_IBM_PIN_OFF_SET), requestHSM.toString()); 			
 		} catch (NumberFormatException e) {
 			e.printStackTrace();
 			return new IBMOfSetResponse(ConstantResponse.FORMAT_ERROR_RESPONSE_CODE,ConstantResponse.FORMAT_ERROR_RESPONSE_MESSAGE,null);	
@@ -195,8 +192,7 @@ public class HSMComunicatorAPI {
 			requestHSM.append(",");
 			requestHSM.append(pan);
 
-			//TODO:Comentar a Alvaro que falta una base de datos
-			//traslateResponse  = OmniCryptoCommand.ProcessRequest(Integer.parseInt(Constant.TRASLATE_PIN_FROM_KWP_TO_MFK), requestHSM.toString()); 			
+			traslateResponse  = OmniCryptoCommand.ProcessRequest(Integer.parseInt(Constant.TRASLATE_PIN_FROM_KWP_TO_MFK), requestHSM.toString()); 			
 
 		} catch (NumberFormatException e) {
 			e.printStackTrace();
@@ -323,5 +319,35 @@ public class HSMComunicatorAPI {
 		}
         return new VeirfyPinUsingIBMMethodResponse(ConstantResponse.SUCESSFULL_RESPONSE_CODE,ConstantResponse.SUCESSFULL_RESPONSE_MESSAGE,resultValidatePin);
     }
+	
+	
+	@RequestMapping(value="/generateKey", method=RequestMethod.POST)
+    public VeirfyPinUsingIBMMethodResponse generateKey(
+    		@RequestParam(required = true) String keyLong,
+    		@RequestParam(required = true) String TypeKey){
+		StringBuilder requestHSM = new StringBuilder();
+		String resultValidatePin = "37";
+		try {
+			requestHSM.append("03");
+			requestHSM.append(",");
+			requestHSM.append(keyLong);
+			requestHSM.append(",");
+			requestHSM.append(TypeKey);
+
+			//TODO:Comentar a Alvaro que falta una base de datos
+			resultValidatePin  = OmniCryptoCommand.ProcessRequest(Integer.parseInt(Constant.GENERATE_KEY), requestHSM.toString());
+
+		} catch (NumberFormatException e) {
+			e.printStackTrace();
+			return new VeirfyPinUsingIBMMethodResponse(ConstantResponse.FORMAT_ERROR_RESPONSE_CODE,ConstantResponse.FORMAT_ERROR_RESPONSE_MESSAGE,null);	
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new VeirfyPinUsingIBMMethodResponse(ConstantResponse.ERROR_RESPONSE_CODE,ConstantResponse.ERROR_RESPONSE_MESSAGE,null);
+		}
+        return new VeirfyPinUsingIBMMethodResponse(ConstantResponse.SUCESSFULL_RESPONSE_CODE,ConstantResponse.SUCESSFULL_RESPONSE_MESSAGE,resultValidatePin);
+    }
+	
+	
+	
 
 }

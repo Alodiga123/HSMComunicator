@@ -2,6 +2,7 @@
 /*     */ 
 /*     */ import java.io.File;
 /*     */ import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 /*     */ import java.io.InputStream;
 /*     */ import java.io.InputStreamReader;
 /*     */ 
@@ -89,19 +90,25 @@
 /*     */     }
 /*     */     
 /*     */ 
-/*     */ 
+/*     */   FileInputStream stream;
+try {
+	stream = new FileInputStream(fil);
+} catch (FileNotFoundException e) {
+	// TODO Auto-generated catch block
+	e.printStackTrace();
+}
 /*     */     try
 /*     */     {
-/*  95 */       stream = new FileInputStream(fil);
+/*  95 */        stream = new FileInputStream(fil);
 /*     */     }
 /*     */     catch (Exception exception) {
-/*     */       FileInputStream stream;
+
 /*  99 */       this.errorMessage = ("El archivo no existe : " + exception.getMessage());
 /* 100 */       this.error = true;
 /* 101 */       return false;
 /*     */     }
 /*     */     
-/*     */     FileInputStream stream;
+
 /* 105 */     leerTexto(stream);
 /*     */     
 /*     */ 
